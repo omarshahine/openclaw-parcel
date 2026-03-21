@@ -51,6 +51,7 @@ type OpenClawPluginToolFactory = (
 
 interface OpenClawContext {
   config?: PluginConfig;
+  pluginConfig?: PluginConfig;
   registerTool(toolOrFactory: OpenClawToolDefinition | OpenClawPluginToolFactory): void;
 }
 
@@ -88,19 +89,14 @@ function resolveApiKey(config?: PluginConfig): string | undefined {
 /**
  * OpenClaw plugin activation function.
  * Called by the OpenClaw gateway when the plugin is loaded.
+ *
+ * API key is resolved lazily at tool call time (not here) because
+ * OpenClaw may call activate() during plugin discovery before the
+ * full config is available.
  */
 export default function activate(context: OpenClawContext): void {
-  const config = context.config;
-  const apiKey = resolveApiKey(config);
-
-  if (!apiKey) {
-    console.error(
-      "[parcel-tracking] No API key found. Set it via OpenClaw config, PARCEL_API_KEY env var, or macOS Keychain (env/PARCEL_API_KEY)."
-    );
-    return;
-  }
-
-  const apiClient = new ParcelAPIClient(apiKey);
+  // Store config reference; actual key resolution happens in execute()
+  const config = context.config || context.pluginConfig;
 
   context.registerTool((_ctx: OpenClawPluginToolContext) => ({
     name: "parcel",
@@ -129,6 +125,79 @@ export default function activate(context: OpenClawContext): void {
           ],
         };
       }
+
+      // Static actions don't need an API key
+      if (params.action === "carriers" || params.action === "status_codes") {
+        try {
+          const result = await handleParcel(
+            params as { action: string; [key: string]: unknown },
+            null as unknown as ParcelAPIClient
+          );
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify(result, null, 2) },
+            ],
+          };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({ success: false, error: message }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      // Browser actions don't need an API key either
+      if (params.action === "edit" || params.action === "remove") {
+        try {
+          const result = await handleParcel(
+            params as { action: string; [key: string]: unknown },
+            null as unknown as ParcelAPIClient
+          );
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify(result, null, 2) },
+            ],
+          };
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({ success: false, error: message }, null, 2),
+              },
+            ],
+          };
+        }
+      }
+
+      // API actions (list, add) need an API key
+      const apiKey = resolveApiKey(config);
+      if (!apiKey) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error:
+                    "No Parcel API key found. Set it via: openclaw config set plugins.entries.openclaw-parcel.config.apiKey YOUR_KEY",
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
+
+      const apiClient = new ParcelAPIClient(apiKey);
 
       try {
         const result = await handleParcel(
