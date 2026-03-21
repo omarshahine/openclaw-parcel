@@ -1,0 +1,43 @@
+{
+  "name": "openclaw-parcel",
+  "version": "1.0.0",
+  "description": "OpenClaw plugin for Parcel package delivery tracking",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "files": [
+    "src/",
+    "lib/",
+    "skills/",
+    "openclaw.plugin.json"
+  ],
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "parcel",
+    "package-tracking",
+    "delivery",
+    "shipping"
+  ],
+  "author": {
+    "name": "Omar Shahine",
+    "email": "omar@shahine.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omarshahine/openclaw-parcel.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

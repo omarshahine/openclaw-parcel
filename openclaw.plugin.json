@@ -1,0 +1,22 @@
+{
+  "id": "parcel-tracking",
+  "name": "Parcel Tracking",
+  "description": "Track, add, edit, and remove package deliveries via the Parcel app",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Parcel API key for list and add operations"
+      }
+    },
+    "required": ["apiKey"]
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "Parcel API Key",
+      "sensitive": true,
+      "help": "Parcel macOS app → Settings → Integrations → Enable API access"
+    }
+  }
+}
