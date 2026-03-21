@@ -1,50 +1,37 @@
 /**
- * Action dispatcher for the consolidated parcel tool.
+ * Handler functions for each parcel tool.
  *
- * Routes each action to the appropriate method:
- * - list/add: Direct Parcel REST API calls
- * - edit/remove: Returns browser automation instructions for OpenClaw's browser tool
- * - carriers/status_codes: Static reference data
+ * API tools (list, add) call the Parcel REST API directly.
+ * Browser tools (edit, remove) return instructions for OpenClaw's browser tool.
+ * Reference tools (carriers, status_codes) return static data.
  */
 
 import type { ParcelAPIClient } from "./api-client.js";
 import type { HandlerResult, FormattedDelivery } from "./types.js";
 import { CARRIERS, STATUS_CODES } from "./carriers.js";
 
-interface ParcelArgs {
-  action: string;
+interface ListArgs {
   include_delivered?: boolean;
   limit?: number;
-  tracking_number?: string;
-  carrier_code?: string;
-  description?: string;
-  [key: string]: unknown;
 }
 
-export async function handleParcel(
-  args: ParcelArgs,
-  apiClient: ParcelAPIClient
-): Promise<HandlerResult> {
-  switch (args.action) {
-    case "list":
-      return handleList(args, apiClient);
-    case "add":
-      return handleAdd(args, apiClient);
-    case "edit":
-      return handleEdit(args);
-    case "remove":
-      return handleRemove(args);
-    case "carriers":
-      return handleCarriers();
-    case "status_codes":
-      return handleStatusCodes();
-    default:
-      return { success: false, error: `Unknown action: ${args.action}` };
-  }
+interface AddArgs {
+  tracking_number: string;
+  carrier_code: string;
+  description: string;
 }
 
-async function handleList(
-  args: ParcelArgs,
+interface EditArgs {
+  tracking_number: string;
+  description: string;
+}
+
+interface RemoveArgs {
+  tracking_number: string;
+}
+
+export async function handleList(
+  args: ListArgs,
   apiClient: ParcelAPIClient
 ): Promise<HandlerResult> {
   const response = await apiClient.getDeliveries();
@@ -81,20 +68,10 @@ async function handleList(
   };
 }
 
-async function handleAdd(
-  args: ParcelArgs,
+export async function handleAdd(
+  args: AddArgs,
   apiClient: ParcelAPIClient
 ): Promise<HandlerResult> {
-  if (!args.tracking_number) {
-    return { success: false, error: "tracking_number is required for add action" };
-  }
-  if (!args.carrier_code) {
-    return { success: false, error: "carrier_code is required for add action" };
-  }
-  if (!args.description) {
-    return { success: false, error: "description is required for add action" };
-  }
-
   const result = await apiClient.addDelivery(
     args.tracking_number,
     args.carrier_code,
@@ -116,16 +93,8 @@ async function handleAdd(
 
 /**
  * Returns browser automation instructions for editing a delivery.
- * The LLM should use OpenClaw's browser tool to execute these steps.
  */
-function handleEdit(args: ParcelArgs): HandlerResult {
-  if (!args.tracking_number) {
-    return { success: false, error: "tracking_number is required for edit action" };
-  }
-  if (!args.description) {
-    return { success: false, error: "description is required for edit action" };
-  }
-
+export function handleEdit(args: EditArgs): HandlerResult {
   return {
     success: true,
     requires_browser: true,
@@ -147,13 +116,8 @@ function handleEdit(args: ParcelArgs): HandlerResult {
 
 /**
  * Returns browser automation instructions for removing a delivery.
- * The LLM should use OpenClaw's browser tool to execute these steps.
  */
-function handleRemove(args: ParcelArgs): HandlerResult {
-  if (!args.tracking_number) {
-    return { success: false, error: "tracking_number is required for remove action" };
-  }
-
+export function handleRemove(args: RemoveArgs): HandlerResult {
   return {
     success: true,
     requires_browser: true,
@@ -172,7 +136,7 @@ function handleRemove(args: ParcelArgs): HandlerResult {
   };
 }
 
-function handleCarriers(): HandlerResult {
+export function handleCarriers(): HandlerResult {
   const carrierList = Object.entries(CARRIERS).map(([code, name]) => ({
     code,
     name,
@@ -186,7 +150,7 @@ function handleCarriers(): HandlerResult {
   };
 }
 
-function handleStatusCodes(): HandlerResult {
+export function handleStatusCodes(): HandlerResult {
   const statusList = Object.entries(STATUS_CODES).map(([code, meaning]) => ({
     code: Number(code),
     meaning,

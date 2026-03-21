@@ -1,40 +1,75 @@
 /**
- * Tool parameter schema for the consolidated `parcel` tool.
+ * Tool parameter schemas for individual parcel tools.
  *
- * Uses raw JSON Schema (not TypeBox) since OpenClaw accepts either format
- * and JSON Schema avoids a runtime dependency.
+ * Each tool has its own focused schema with explicit required fields.
  */
 
-export const parcelSchema = {
+export const listSchema = {
   type: "object",
   properties: {
-    action: {
-      type: "string",
-      enum: ["list", "add", "edit", "remove", "carriers", "status_codes"],
-      description:
-        "Operation to perform: list (get deliveries), add (new tracking), edit (update description), remove (delete delivery), carriers (list carrier codes), status_codes (status reference)",
-    },
     include_delivered: {
       type: "boolean",
-      description: "Include delivered packages in list results (default: true)",
+      description: "Include delivered packages in results (default: true)",
     },
     limit: {
       type: "number",
       description: "Maximum number of deliveries to return (default: 50)",
     },
+  },
+} as const;
+
+export const addSchema = {
+  type: "object",
+  properties: {
     tracking_number: {
       type: "string",
-      description: "Tracking number (required for add, edit, remove)",
+      description: "Tracking number from the carrier",
     },
     carrier_code: {
       type: "string",
       description:
-        "Carrier code e.g. ups, fedex, usps, dhl, amazon (required for add). Use carriers action to see all codes.",
+        "Carrier code e.g. ups, fedex, usps, dhl, amazon. Use parcel_carriers to see all codes.",
     },
     description: {
       type: "string",
-      description: "Package description (required for add, optional for edit)",
+      description: "Package description e.g. 'Amazon order - headphones'",
     },
   },
-  required: ["action"],
+  required: ["tracking_number", "carrier_code", "description"],
+} as const;
+
+export const editSchema = {
+  type: "object",
+  properties: {
+    tracking_number: {
+      type: "string",
+      description: "Tracking number of the delivery to edit",
+    },
+    description: {
+      type: "string",
+      description: "New description for the delivery",
+    },
+  },
+  required: ["tracking_number", "description"],
+} as const;
+
+export const removeSchema = {
+  type: "object",
+  properties: {
+    tracking_number: {
+      type: "string",
+      description: "Tracking number of the delivery to remove",
+    },
+  },
+  required: ["tracking_number"],
+} as const;
+
+export const carriersSchema = {
+  type: "object",
+  properties: {},
+} as const;
+
+export const statusCodesSchema = {
+  type: "object",
+  properties: {},
 } as const;

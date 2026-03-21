@@ -13,33 +13,30 @@ description: |
 
 Track package deliveries via the Parcel app API and web interface.
 
-## Tool: `parcel`
+## Tools
 
-Single tool with 6 actions:
+| Tool | Description | Needs API Key |
+|------|-------------|:---:|
+| `parcel_list` | List active/recent deliveries with status filtering | Yes |
+| `parcel_add` | Add new tracking number | Yes |
+| `parcel_edit` | Update delivery description (via browser) | No |
+| `parcel_remove` | Delete a delivery (via browser) | No |
+| `parcel_carriers` | List supported carrier codes | No |
+| `parcel_status_codes` | Status code reference | No |
 
-| Action | Method | Required Params |
-|--------|--------|-----------------|
-| `list` | API | none (optional: `include_delivered`, `limit`) |
-| `add` | API | `tracking_number`, `carrier_code`, `description` |
-| `edit` | Browser | `tracking_number`, `description` |
-| `remove` | Browser | `tracking_number` |
-| `carriers` | Static | none |
-| `status_codes` | Static | none |
+## Browser Tools (edit/remove)
 
-## Browser Actions (edit/remove)
-
-The `edit` and `remove` actions return structured instructions with `requires_browser: true`. When you receive this response, use OpenClaw's built-in browser tool to:
+`parcel_edit` and `parcel_remove` return structured instructions with `requires_browser: true`. When you receive this response, use OpenClaw's built-in browser tool to:
 
 1. Navigate to `https://web.parcelapp.net`
-2. Log in if needed (ask user for credentials if not already known)
+2. Log in if needed
 3. Follow the step-by-step instructions in the response
-4. Report back the result
 
 ## Rate Limits
 
-- **List**: ~20 requests/hour
-- **Add**: ~20 requests/day
-- **Edit/Remove**: Browser-based, no API rate limit
+- **parcel_list**: ~20 requests/hour
+- **parcel_add**: ~20 requests/day
+- **parcel_edit/remove**: Browser-based, no API rate limit
 
 ## Common Carrier Codes
 
@@ -51,10 +48,7 @@ The `edit` and `remove` actions return structured instructions with `requires_br
 | `dhl` | DHL |
 | `amazon` | Amazon Logistics |
 | `ontrac` | OnTrac |
-| `lasership` | LaserShip |
 | `pholder` | Placeholder (manual) |
-
-Use `action: "carriers"` for the full list.
 
 ## Status Codes
 
@@ -70,12 +64,4 @@ Use `action: "carriers"` for the full list.
 
 ## Configuration
 
-Requires a **Parcel API key** (set during install or via env var `PARCEL_API_KEY`).
-
-API key source: Parcel macOS app → Settings → Integrations → Enable API access.
-
-## Architecture
-
-- **list/add**: Direct REST API calls to `https://api.parcel.app/external` (fast, reliable)
-- **edit/remove**: Returns browser instructions; the LLM uses OpenClaw's browser tool to execute them on `web.parcelapp.net`
-- No Playwright or browser dependencies bundled; leverages OpenClaw's native browser capability
+Requires a **Parcel API key** for list/add. Supports plain string, `${ENV_VAR}` interpolation, or SecretRef objects in plugin config.

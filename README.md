@@ -2,8 +2,6 @@
 
 OpenClaw plugin for [Parcel](https://parcelapp.net) package delivery tracking.
 
-Track, add, edit, and remove package deliveries through a single consolidated tool.
-
 ## Install
 
 ```bash
@@ -12,11 +10,7 @@ openclaw plugins install openclaw-parcel
 
 ## Configuration
 
-The plugin requires a **Parcel API Key**. Get yours from:
-
-1. Open the Parcel app on your Mac
-2. Go to Settings > Integrations
-3. Enable API access and copy your API key
+The plugin requires a **Parcel API Key** for list and add operations. Get yours from the Parcel macOS app: Settings > Integrations > Enable API access.
 
 ### Option A: Environment variable with `.env` file (recommended)
 
@@ -68,58 +62,69 @@ The plugin also resolves the API key from these sources (checked in order):
 | Env var | `PARCEL_API_KEY` |
 | macOS Keychain | `env/PARCEL_API_KEY` |
 
-## Usage
+## Tools
 
-The plugin registers a single `parcel` tool with these actions:
+### parcel_list
 
-### List deliveries
-
-```
-parcel { action: "list" }
-parcel { action: "list", include_delivered: false }
-parcel { action: "list", limit: 10 }
-```
-
-### Add a delivery
+List active and recent deliveries with status filtering.
 
 ```
-parcel { action: "add", tracking_number: "1Z999AA10123456784", carrier_code: "ups", description: "New headphones" }
+parcel_list {}
+parcel_list { include_delivered: false }
+parcel_list { limit: 10 }
 ```
 
-### Edit a delivery (via browser)
+### parcel_add
+
+Add a new package to track. Use `parcel_carriers` to look up carrier codes.
 
 ```
-parcel { action: "edit", tracking_number: "1Z999AA10123456784", description: "Updated name" }
+parcel_add { tracking_number: "1Z999AA10123456784", carrier_code: "ups", description: "New headphones" }
 ```
 
-Returns browser automation instructions. The LLM uses OpenClaw's built-in browser tool to execute the edit on web.parcelapp.net.
+### parcel_edit
 
-### Remove a delivery (via browser)
-
-```
-parcel { action: "remove", tracking_number: "1Z999AA10123456784" }
-```
-
-Returns browser automation instructions. The LLM uses OpenClaw's built-in browser tool to execute the removal on web.parcelapp.net.
-
-### Reference data
+Edit a delivery's description via browser automation on web.parcelapp.net.
 
 ```
-parcel { action: "carriers" }
-parcel { action: "status_codes" }
+parcel_edit { tracking_number: "1Z999AA10123456784", description: "Updated name" }
+```
+
+### parcel_remove
+
+Remove a delivery via browser automation on web.parcelapp.net.
+
+```
+parcel_remove { tracking_number: "1Z999AA10123456784" }
+```
+
+### parcel_carriers
+
+List supported carrier codes.
+
+```
+parcel_carriers {}
+```
+
+### parcel_status_codes
+
+Reference for delivery status codes and their meanings.
+
+```
+parcel_status_codes {}
 ```
 
 ## Architecture
 
-- **List/Add**: Direct REST API calls to `https://api.parcel.app/external`
-- **Edit/Remove**: Returns structured browser instructions with `requires_browser: true`; the LLM uses OpenClaw's native browser tool to execute them on `web.parcelapp.net`
-- Zero external dependencies beyond TypeScript (no Playwright or browser binaries)
+- **parcel_list / parcel_add**: Direct REST API calls to `https://api.parcel.app/external`
+- **parcel_edit / parcel_remove**: Returns browser instructions with `requires_browser: true` for OpenClaw's browser tool
+- **parcel_carriers / parcel_status_codes**: Static reference data, no network calls
 
 ## Rate Limits
 
-- List: ~20 requests/hour
-- Add: ~20 requests/day
-- Edit/Remove: Browser-based, no API limit
+- parcel_list: ~20 requests/hour
+- parcel_add: ~20 requests/day
+- parcel_edit / parcel_remove: Browser-based, no API limit
 
 ## License
 
