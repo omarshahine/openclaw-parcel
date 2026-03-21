@@ -9,8 +9,7 @@
         "type": "string",
         "description": "Parcel API key for list and add operations"
       }
-    },
-    "required": ["apiKey"]
+    }
   },
   "uiHints": {
     "apiKey": {
