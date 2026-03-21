@@ -1,5 +1,5 @@
 {
-  "id": "parcel-tracking",
+  "id": "openclaw-parcel",
   "name": "Parcel Tracking",
   "description": "Track, add, edit, and remove package deliveries via the Parcel app",
   "configSchema": {
