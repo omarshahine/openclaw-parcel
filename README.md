@@ -18,50 +18,55 @@ The plugin requires a **Parcel API Key**. Get yours from:
 2. Go to Settings > Integrations
 3. Enable API access and copy your API key
 
-### Using OpenClaw Secrets (recommended)
-
-Store your API key using a SecretRef so it never appears as plaintext in `openclaw.json`.
-
-**Option A: Environment variable**
+### Option A: Environment variable with `.env` file (recommended)
 
 ```bash
-# Add to your shell profile (~/.zshrc)
-export PARCEL_API_KEY="your-api-key"
+# Add to ~/.openclaw/.env (chmod 600)
+PARCEL_API_KEY=your-api-key
 
-# Configure the SecretRef
-openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
-  '{"source":"env","provider":"env","id":"PARCEL_API_KEY"}'
+# Reference via env interpolation in config
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey '${PARCEL_API_KEY}'
 ```
 
-**Option B: macOS Keychain (via exec provider)**
+### Option B: SecretRef object (env source)
+
+The plugin's `apiKey` config field accepts a SecretRef object directly:
+
+```bash
+# Set PARCEL_API_KEY in your environment or ~/.openclaw/.env
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
+  '{"source":"env","provider":"env","id":"PARCEL_API_KEY"}' --strict-json
+```
+
+### Option C: SecretRef object (exec source, macOS Keychain)
 
 ```bash
 # Store key in Keychain
 security add-generic-password -s 'env/PARCEL_API_KEY' -a "$USER" -w 'your-api-key'
 
-# Use openclaw secrets configure to set up the exec provider and SecretRef
-openclaw secrets configure
+# Configure SecretRef to read from Keychain
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
+  '{"source":"exec","provider":"keychain","id":"env/PARCEL_API_KEY"}' --strict-json
 ```
 
-**Option C: Interactive setup**
+### Option D: Interactive setup
 
 ```bash
 openclaw secrets configure
 ```
 
-The wizard will walk you through provider setup and SecretRef creation.
-
 See [OpenClaw Secrets Management](https://docs.openclaw.ai/gateway/secrets) for full documentation.
 
 ### Plaintext fallback
 
-If you prefer not to use SecretRefs, the plugin also resolves the API key from:
+The plugin also resolves the API key from these sources (checked in order):
 
 | Source | Details |
 |--------|---------|
-| Plugin config | `plugins.entries.openclaw-parcel.config.apiKey` (plaintext) |
+| Plugin config (string) | `plugins.entries.openclaw-parcel.config.apiKey` |
+| Plugin config (SecretRef) | Resolved via env, file, or exec provider |
 | Env var | `PARCEL_API_KEY` |
-| macOS Keychain | `security find-generic-password -s 'env/PARCEL_API_KEY' -w` |
+| macOS Keychain | `env/PARCEL_API_KEY` |
 
 ## Usage
 
