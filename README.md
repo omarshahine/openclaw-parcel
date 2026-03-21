@@ -12,17 +12,56 @@ openclaw plugins install openclaw-parcel
 
 ## Configuration
 
-During setup, you'll be prompted for your **Parcel API Key**:
+The plugin requires a **Parcel API Key**. Get yours from:
 
 1. Open the Parcel app on your Mac
 2. Go to Settings > Integrations
 3. Enable API access and copy your API key
 
-### Environment Variable Fallbacks
+### Using OpenClaw Secrets (recommended)
 
-| Config Field | Env Var | Keychain Entry |
-|-------------|---------|----------------|
-| `apiKey` | `PARCEL_API_KEY` | `env/PARCEL_API_KEY` |
+Store your API key using a SecretRef so it never appears as plaintext in `openclaw.json`.
+
+**Option A: Environment variable**
+
+```bash
+# Add to your shell profile (~/.zshrc)
+export PARCEL_API_KEY="your-api-key"
+
+# Configure the SecretRef
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
+  '{"source":"env","provider":"env","id":"PARCEL_API_KEY"}'
+```
+
+**Option B: macOS Keychain (via exec provider)**
+
+```bash
+# Store key in Keychain
+security add-generic-password -s 'env/PARCEL_API_KEY' -a "$USER" -w 'your-api-key'
+
+# Use openclaw secrets configure to set up the exec provider and SecretRef
+openclaw secrets configure
+```
+
+**Option C: Interactive setup**
+
+```bash
+openclaw secrets configure
+```
+
+The wizard will walk you through provider setup and SecretRef creation.
+
+See [OpenClaw Secrets Management](https://docs.openclaw.ai/gateway/secrets) for full documentation.
+
+### Plaintext fallback
+
+If you prefer not to use SecretRefs, the plugin also resolves the API key from:
+
+| Source | Details |
+|--------|---------|
+| Plugin config | `plugins.entries.openclaw-parcel.config.apiKey` (plaintext) |
+| Env var | `PARCEL_API_KEY` |
+| macOS Keychain | `security find-generic-password -s 'env/PARCEL_API_KEY' -w` |
 
 ## Usage
 
