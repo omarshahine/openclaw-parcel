@@ -2,6 +2,7 @@
   "id": "openclaw-parcel",
   "name": "Parcel Tracking",
   "description": "Track, add, edit, and remove package deliveries via the Parcel app",
+  "skills": ["skills/parcel-tracking"],
   "configSchema": {
     "type": "object",
     "properties": {
