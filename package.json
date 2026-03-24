@@ -38,11 +38,12 @@
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
-    "openclaw": "^2026.3.23"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^25.5.0",
     "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.23"
   }
 }
