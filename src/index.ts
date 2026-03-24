@@ -8,6 +8,7 @@
  */
 
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { type Static } from "@sinclair/typebox";
 import { ParcelAPIClient } from "../lib/api-client.js";
 import {
   listSchema,
@@ -26,6 +27,11 @@ import {
   handleStatusCodes,
 } from "../lib/handler.js";
 import { execFileSync } from "child_process";
+
+type ListParams = Static<typeof listSchema>;
+type AddParams = Static<typeof addSchema>;
+type EditParams = Static<typeof editSchema>;
+type RemoveParams = Static<typeof removeSchema>;
 
 interface SecretRef {
   source: "env" | "file" | "exec";
@@ -125,7 +131,7 @@ export default definePluginEntry({
         const client = getApiClient();
         if (!client) return errorResult("No Parcel API key configured.");
         try {
-          return toToolResult(await handleList(params as { include_delivered?: boolean; limit?: number }, client));
+          return toToolResult(await handleList(params as ListParams, client));
         } catch (e: unknown) {
           return errorResult(e instanceof Error ? e.message : String(e));
         }
@@ -143,7 +149,7 @@ export default definePluginEntry({
         const client = getApiClient();
         if (!client) return errorResult("No Parcel API key configured.");
         try {
-          return toToolResult(await handleAdd(params as { tracking_number: string; carrier_code: string; description: string }, client));
+          return toToolResult(await handleAdd(params as AddParams, client));
         } catch (e: unknown) {
           return errorResult(e instanceof Error ? e.message : String(e));
         }
@@ -159,7 +165,7 @@ export default definePluginEntry({
       parameters: editSchema,
       async execute(_toolCallId: string, params: Record<string, unknown>) {
         try {
-          return toToolResult(handleEdit(params as { tracking_number: string; description: string }));
+          return toToolResult(handleEdit(params as EditParams));
         } catch (e: unknown) {
           return errorResult(e instanceof Error ? e.message : String(e));
         }
@@ -175,7 +181,7 @@ export default definePluginEntry({
       parameters: removeSchema,
       async execute(_toolCallId: string, params: Record<string, unknown>) {
         try {
-          return toToolResult(handleRemove(params as { tracking_number: string }));
+          return toToolResult(handleRemove(params as RemoveParams));
         } catch (e: unknown) {
           return errorResult(e instanceof Error ? e.message : String(e));
         }

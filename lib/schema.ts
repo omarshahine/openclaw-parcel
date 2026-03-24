@@ -1,75 +1,40 @@
 /**
  * Tool parameter schemas for individual parcel tools.
  *
- * Each tool has its own focused schema with explicit required fields.
+ * Uses TypeBox for SDK-compliant type-safe schemas.
  */
 
-export const listSchema = {
-  type: "object",
-  properties: {
-    include_delivered: {
-      type: "boolean",
-      description: "Include delivered packages in results (default: true)",
-    },
-    limit: {
-      type: "number",
-      description: "Maximum number of deliveries to return (default: 50)",
-    },
-  },
-} as const;
+import { Type } from "@sinclair/typebox";
 
-export const addSchema = {
-  type: "object",
-  properties: {
-    tracking_number: {
-      type: "string",
-      description: "Tracking number from the carrier",
-    },
-    carrier_code: {
-      type: "string",
-      description:
-        "Carrier code e.g. ups, fedex, usps, dhl, amazon. Use parcel_carriers to see all codes.",
-    },
-    description: {
-      type: "string",
-      description: "Package description e.g. 'Amazon order - headphones'",
-    },
-  },
-  required: ["tracking_number", "carrier_code", "description"],
-} as const;
+export const listSchema = Type.Object({
+  include_delivered: Type.Optional(
+    Type.Boolean({ description: "Include delivered packages in results (default: true)" })
+  ),
+  limit: Type.Optional(
+    Type.Number({ description: "Maximum number of deliveries to return (default: 50)" })
+  ),
+});
 
-export const editSchema = {
-  type: "object",
-  properties: {
-    tracking_number: {
-      type: "string",
-      description: "Tracking number of the delivery to edit",
-    },
-    description: {
-      type: "string",
-      description: "New description for the delivery",
-    },
-  },
-  required: ["tracking_number", "description"],
-} as const;
+export const addSchema = Type.Object({
+  tracking_number: Type.String({ description: "Tracking number from the carrier" }),
+  carrier_code: Type.String({
+    description:
+      "Carrier code e.g. ups, fedex, usps, dhl, amazon. Use parcel_carriers to see all codes.",
+  }),
+  description: Type.String({
+    description: "Package description e.g. 'Amazon order - headphones'",
+  }),
+});
 
-export const removeSchema = {
-  type: "object",
-  properties: {
-    tracking_number: {
-      type: "string",
-      description: "Tracking number of the delivery to remove",
-    },
-  },
-  required: ["tracking_number"],
-} as const;
+export const editSchema = Type.Object({
+  tracking_number: Type.String({ description: "Tracking number of the delivery to edit" }),
+  description: Type.String({ description: "New description for the delivery" }),
+});
 
-export const carriersSchema = {
-  type: "object",
-  properties: {},
-} as const;
+export const removeSchema = Type.Object({
+  tracking_number: Type.String({ description: "Tracking number of the delivery to remove" }),
+});
 
-export const statusCodesSchema = {
-  type: "object",
-  properties: {},
-} as const;
+export const carriersSchema = Type.Object({});
+
+export const statusCodesSchema = Type.Object({});
