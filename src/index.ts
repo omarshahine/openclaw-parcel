@@ -88,7 +88,7 @@ function resolveApiKey(config?: PluginConfig): string | undefined {
 function toolResult(text: string) {
   return {
     content: [{ type: "text" as const, text }],
-    details: undefined,
+    details: null,
   };
 }
 
@@ -117,7 +117,7 @@ export default definePluginEntry({
     // --- parcel_list ---
     api.registerTool({
       name: "parcel_list",
-      label: "parcel_list",
+      label: "Parcel List",
       description:
         "List active and recent package deliveries from Parcel. Returns tracking info, status, carrier, and estimated delivery dates.",
       parameters: listSchema,
@@ -135,7 +135,7 @@ export default definePluginEntry({
     // --- parcel_add ---
     api.registerTool({
       name: "parcel_add",
-      label: "parcel_add",
+      label: "Parcel Add",
       description:
         "Add a new package to Parcel for tracking. Requires tracking number, carrier code, and description. Use parcel_carriers to look up carrier codes.",
       parameters: addSchema,
@@ -153,7 +153,7 @@ export default definePluginEntry({
     // --- parcel_edit ---
     api.registerTool({
       name: "parcel_edit",
-      label: "parcel_edit",
+      label: "Parcel Edit",
       description:
         "Edit a delivery's description on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
       parameters: editSchema,
@@ -169,7 +169,7 @@ export default definePluginEntry({
     // --- parcel_remove ---
     api.registerTool({
       name: "parcel_remove",
-      label: "parcel_remove",
+      label: "Parcel Remove",
       description:
         "Remove a delivery from Parcel on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
       parameters: removeSchema,
@@ -185,7 +185,7 @@ export default definePluginEntry({
     // --- parcel_carriers ---
     api.registerTool({
       name: "parcel_carriers",
-      label: "parcel_carriers",
+      label: "Parcel Carriers",
       description:
         "List supported carrier codes for adding deliveries to Parcel (ups, fedex, usps, dhl, amazon, etc.).",
       parameters: carriersSchema,
@@ -197,7 +197,7 @@ export default definePluginEntry({
     // --- parcel_status_codes ---
     api.registerTool({
       name: "parcel_status_codes",
-      label: "parcel_status_codes",
+      label: "Parcel Status Codes",
       description:
         "Reference for Parcel delivery status codes and their meanings (0=Delivered, 2=In transit, etc.).",
       parameters: statusCodesSchema,

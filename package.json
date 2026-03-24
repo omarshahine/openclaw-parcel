@@ -12,7 +12,8 @@
     "src/",
     "lib/",
     "skills/",
-    "openclaw.plugin.json"
+    "openclaw.plugin.json",
+    "marketplace.json"
   ],
   "keywords": [
     "openclaw",
