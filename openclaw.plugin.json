@@ -1,6 +1,6 @@
 {
-  "id": "openclaw-parcel",
-  "name": "Parcel Tracking",
+  "id": "parcel-cli",
+  "name": "Parcel",
   "description": "Track, add, edit, and remove package deliveries via the Parcel app",
   "skills": ["skills/parcel-tracking"],
   "configSchema": {
@@ -32,7 +32,8 @@
         ],
         "description": "Parcel API key: plain string, ${ENV_VAR}, or SecretRef object"
       }
-    }
+    },
+    "additionalProperties": false
   },
   "uiHints": {
     "apiKey": {

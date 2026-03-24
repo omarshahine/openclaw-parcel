@@ -7,6 +7,7 @@
  * - parcel_carriers, parcel_status_codes (static reference)
  */
 
+import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { ParcelAPIClient } from "../lib/api-client.js";
 import {
   listSchema,
@@ -26,26 +27,6 @@ import {
 } from "../lib/handler.js";
 import { execFileSync } from "child_process";
 
-// OpenClaw plugin types
-
-interface TextContent {
-  type: "text";
-  text: string;
-}
-
-interface OpenClawToolDefinition {
-  name: string;
-  label: string;
-  description: string;
-  parameters: Record<string, unknown>;
-  execute: (
-    toolCallId: string,
-    params: Record<string, unknown>,
-    signal?: AbortSignal,
-    onUpdate?: (partialResult: unknown) => void
-  ) => Promise<{ content: TextContent[]; details?: unknown }>;
-}
-
 interface SecretRef {
   source: "env" | "file" | "exec";
   provider: string;
@@ -54,23 +35,6 @@ interface SecretRef {
 
 interface PluginConfig {
   apiKey?: string | SecretRef;
-}
-
-interface OpenClawPluginToolContext {
-  config?: Record<string, unknown>;
-  workspaceDir?: string;
-  agentId?: string;
-  sessionKey?: string;
-}
-
-type OpenClawPluginToolFactory = (
-  ctx: OpenClawPluginToolContext
-) => OpenClawToolDefinition | OpenClawToolDefinition[] | null | undefined;
-
-interface OpenClawContext {
-  config?: PluginConfig;
-  pluginConfig?: PluginConfig;
-  registerTool(toolOrFactory: OpenClawToolDefinition | OpenClawPluginToolFactory): void;
 }
 
 function keychainLookup(service: string): string | undefined {
@@ -121,114 +85,125 @@ function resolveApiKey(config?: PluginConfig): string | undefined {
 }
 
 /** Helper to wrap a handler result as tool output. */
-function toToolResult(result: Record<string, unknown>): { content: TextContent[] } {
+function toolResult(text: string) {
   return {
-    content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+    content: [{ type: "text" as const, text }],
+    details: null,
   };
 }
 
-function errorResult(message: string): { content: TextContent[] } {
+function toToolResult(result: Record<string, unknown>) {
+  return toolResult(JSON.stringify(result, null, 2));
+}
+
+function errorResult(message: string) {
   return toToolResult({ success: false, error: message });
 }
 
-export default function activate(context: OpenClawContext): void {
-  const config = context.config || context.pluginConfig;
+export default definePluginEntry({
+  id: "parcel-cli",
+  name: "Parcel",
+  description: "Track, add, edit, and remove package deliveries via the Parcel app",
 
-  // Helper: get API client or return error
-  function getApiClient(): ParcelAPIClient | null {
-    const apiKey = resolveApiKey(config);
-    return apiKey ? new ParcelAPIClient(apiKey) : null;
-  }
+  register(api) {
+    const config = api.pluginConfig as PluginConfig | undefined;
 
-  // --- parcel_list ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_list",
-    label: "Parcel List",
-    description:
-      "List active and recent package deliveries from Parcel. Returns tracking info, status, carrier, and estimated delivery dates.",
-    parameters: listSchema as Record<string, unknown>,
-    async execute(_toolCallId, params) {
-      const client = getApiClient();
-      if (!client) return errorResult("No Parcel API key configured.");
-      try {
-        return toToolResult(await handleList(params as { include_delivered?: boolean; limit?: number }, client));
-      } catch (e: unknown) {
-        return errorResult(e instanceof Error ? e.message : String(e));
-      }
-    },
-  }));
+    // Helper: get API client or return error
+    function getApiClient(): ParcelAPIClient | null {
+      const apiKey = resolveApiKey(config);
+      return apiKey ? new ParcelAPIClient(apiKey) : null;
+    }
 
-  // --- parcel_add ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_add",
-    label: "Parcel Add",
-    description:
-      "Add a new package to Parcel for tracking. Requires tracking number, carrier code, and description. Use parcel_carriers to look up carrier codes.",
-    parameters: addSchema as Record<string, unknown>,
-    async execute(_toolCallId, params) {
-      const client = getApiClient();
-      if (!client) return errorResult("No Parcel API key configured.");
-      try {
-        return toToolResult(await handleAdd(params as { tracking_number: string; carrier_code: string; description: string }, client));
-      } catch (e: unknown) {
-        return errorResult(e instanceof Error ? e.message : String(e));
-      }
-    },
-  }));
+    // --- parcel_list ---
+    api.registerTool({
+      name: "parcel_list",
+      label: "Parcel List",
+      description:
+        "List active and recent package deliveries from Parcel. Returns tracking info, status, carrier, and estimated delivery dates.",
+      parameters: listSchema,
+      async execute(_toolCallId: string, params: Record<string, unknown>) {
+        const client = getApiClient();
+        if (!client) return errorResult("No Parcel API key configured.");
+        try {
+          return toToolResult(await handleList(params as { include_delivered?: boolean; limit?: number }, client));
+        } catch (e: unknown) {
+          return errorResult(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
 
-  // --- parcel_edit ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_edit",
-    label: "Parcel Edit",
-    description:
-      "Edit a delivery's description on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
-    parameters: editSchema as Record<string, unknown>,
-    async execute(_toolCallId, params) {
-      try {
-        return toToolResult(handleEdit(params as { tracking_number: string; description: string }));
-      } catch (e: unknown) {
-        return errorResult(e instanceof Error ? e.message : String(e));
-      }
-    },
-  }));
+    // --- parcel_add ---
+    api.registerTool({
+      name: "parcel_add",
+      label: "Parcel Add",
+      description:
+        "Add a new package to Parcel for tracking. Requires tracking number, carrier code, and description. Use parcel_carriers to look up carrier codes.",
+      parameters: addSchema,
+      async execute(_toolCallId: string, params: Record<string, unknown>) {
+        const client = getApiClient();
+        if (!client) return errorResult("No Parcel API key configured.");
+        try {
+          return toToolResult(await handleAdd(params as { tracking_number: string; carrier_code: string; description: string }, client));
+        } catch (e: unknown) {
+          return errorResult(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
 
-  // --- parcel_remove ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_remove",
-    label: "Parcel Remove",
-    description:
-      "Remove a delivery from Parcel on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
-    parameters: removeSchema as Record<string, unknown>,
-    async execute(_toolCallId, params) {
-      try {
-        return toToolResult(handleRemove(params as { tracking_number: string }));
-      } catch (e: unknown) {
-        return errorResult(e instanceof Error ? e.message : String(e));
-      }
-    },
-  }));
+    // --- parcel_edit ---
+    api.registerTool({
+      name: "parcel_edit",
+      label: "Parcel Edit",
+      description:
+        "Edit a delivery's description on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
+      parameters: editSchema,
+      async execute(_toolCallId: string, params: Record<string, unknown>) {
+        try {
+          return toToolResult(handleEdit(params as { tracking_number: string; description: string }));
+        } catch (e: unknown) {
+          return errorResult(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
 
-  // --- parcel_carriers ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_carriers",
-    label: "Parcel Carriers",
-    description:
-      "List supported carrier codes for adding deliveries to Parcel (ups, fedex, usps, dhl, amazon, etc.).",
-    parameters: carriersSchema as Record<string, unknown>,
-    async execute() {
-      return toToolResult(handleCarriers());
-    },
-  }));
+    // --- parcel_remove ---
+    api.registerTool({
+      name: "parcel_remove",
+      label: "Parcel Remove",
+      description:
+        "Remove a delivery from Parcel on web.parcelapp.net. Returns browser automation instructions for OpenClaw's browser tool.",
+      parameters: removeSchema,
+      async execute(_toolCallId: string, params: Record<string, unknown>) {
+        try {
+          return toToolResult(handleRemove(params as { tracking_number: string }));
+        } catch (e: unknown) {
+          return errorResult(e instanceof Error ? e.message : String(e));
+        }
+      },
+    });
 
-  // --- parcel_status_codes ---
-  context.registerTool((_ctx: OpenClawPluginToolContext) => ({
-    name: "parcel_status_codes",
-    label: "Parcel Status Codes",
-    description:
-      "Reference for Parcel delivery status codes and their meanings (0=Delivered, 2=In transit, etc.).",
-    parameters: statusCodesSchema as Record<string, unknown>,
-    async execute() {
-      return toToolResult(handleStatusCodes());
-    },
-  }));
-}
+    // --- parcel_carriers ---
+    api.registerTool({
+      name: "parcel_carriers",
+      label: "Parcel Carriers",
+      description:
+        "List supported carrier codes for adding deliveries to Parcel (ups, fedex, usps, dhl, amazon, etc.).",
+      parameters: carriersSchema,
+      async execute() {
+        return toToolResult(handleCarriers());
+      },
+    });
+
+    // --- parcel_status_codes ---
+    api.registerTool({
+      name: "parcel_status_codes",
+      label: "Parcel Status Codes",
+      description:
+        "Reference for Parcel delivery status codes and their meanings (0=Delivered, 2=In transit, etc.).",
+      parameters: statusCodesSchema,
+      async execute() {
+        return toToolResult(handleStatusCodes());
+      },
+    });
+  },
+});
