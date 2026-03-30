@@ -21,8 +21,17 @@ OpenClaw plugin for Parcel package delivery tracking. Published to ClawHub as `p
 - `clawhub` CLI installed: `npm install -g clawhub`
 - Authenticated: `clawhub login` (browser OAuth flow)
 - Verify: `clawhub whoami`
+- `package.json` must have `openclaw.compat.pluginApi` and `openclaw.build.openclawVersion` fields
 
-### Publish Command
+### Publish Script (preferred)
+
+```bash
+./publish-clawhub.sh --changelog "summary of changes"
+```
+
+The script extracts the version from `package.json`, gets the current git SHA, and calls `clawhub package publish` with all required flags. If `--changelog` is omitted, it prompts interactively.
+
+### Manual Publish Command
 
 ```bash
 clawhub package publish . \
@@ -31,6 +40,7 @@ clawhub package publish . \
   --display-name Parcel \
   --version <version from package.json> \
   --changelog "<summary of changes>" \
+  --tags "latest" \
   --source-repo omarshahine/openclaw-parcel \
   --source-commit $(git rev-parse HEAD) \
   --source-ref main
