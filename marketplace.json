@@ -6,7 +6,7 @@
       "name": "parcel-cli",
       "source": ".",
       "description": "Track, add, edit, and remove package deliveries via the Parcel app",
-      "version": "1.2.0"
+      "version": "1.2.1"
     }
   ]
 }
