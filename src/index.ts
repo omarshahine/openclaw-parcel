@@ -26,6 +26,9 @@ import {
   handleCarriers,
   handleStatusCodes,
 } from "../lib/handler.js";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 type ListParams = Static<typeof listSchema>;
 type AddParams = Static<typeof addSchema>;
@@ -72,6 +75,24 @@ function isSecretRef(value: unknown): value is SecretRef {
   );
 }
 
+/**
+ * Follow an RFC 6901 JSON pointer into a parsed JSON document. Returns
+ * undefined for missing paths or non-object traversals.
+ */
+function jsonPointer(doc: unknown, pointer: string): unknown {
+  if (!pointer || pointer === "/") return doc;
+  const parts = pointer
+    .replace(/^\//, "")
+    .split("/")
+    .map((p) => p.replace(/~1/g, "/").replace(/~0/g, "~"));
+  let cur: unknown = doc;
+  for (const p of parts) {
+    if (cur == null || typeof cur !== "object") return undefined;
+    cur = (cur as Record<string, unknown>)[p];
+  }
+  return cur;
+}
+
 async function resolveSecretRef(ref: SecretRef): Promise<string | undefined> {
   switch (ref.source) {
     case "env":
@@ -79,6 +100,22 @@ async function resolveSecretRef(ref: SecretRef): Promise<string | undefined> {
     case "exec":
       if (ref.provider === "keychain" || ref.provider === "security") {
         return keychainLookup(ref.id);
+      }
+      return undefined;
+    case "file":
+      // OpenClaw shared-secrets-store: read ~/.openclaw/secrets.json and
+      // follow ref.id as a JSON pointer. Matches the pattern used by
+      // travel-hub, easypost, restaurant-cli, porsche-connect, instapaper.
+      if (ref.provider === "secrets") {
+        const secretsPath = join(homedir(), ".openclaw", "secrets.json");
+        if (!existsSync(secretsPath)) return undefined;
+        try {
+          const doc = JSON.parse(readFileSync(secretsPath, "utf8"));
+          const v = jsonPointer(doc, ref.id);
+          return typeof v === "string" && v ? v : undefined;
+        } catch {
+          return undefined;
+        }
       }
       return undefined;
     default:
