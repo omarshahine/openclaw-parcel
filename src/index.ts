@@ -78,9 +78,13 @@ function isSecretRef(value: unknown): value is SecretRef {
 /**
  * Follow an RFC 6901 JSON pointer into a parsed JSON document. Returns
  * undefined for missing paths or non-object traversals.
+ *
+ * Per RFC 6901: empty string `""` → root document, `"/"` → the member with
+ * the empty-string key (i.e. `doc[""]`), `"/a/b"` → `doc.a.b`. Everything
+ * else traverses normally with `~0`/`~1` un-escaping for `~`/`/` in keys.
  */
 function jsonPointer(doc: unknown, pointer: string): unknown {
-  if (!pointer || pointer === "/") return doc;
+  if (!pointer) return doc;
   const parts = pointer
     .replace(/^\//, "")
     .split("/")
@@ -158,10 +162,18 @@ export default definePluginEntry({
   register(api) {
     const config = api.pluginConfig as PluginConfig | undefined;
 
-    // Helper: get API client or return error
+    // Cache the ParcelAPIClient across tool calls — config and the SecretRef
+    // don't change without a gateway restart (which re-runs register), so
+    // resolving the key once per registration avoids re-reading secrets.json
+    // and re-running the Keychain lookup on every tool invocation.
+    let cachedClient: ParcelAPIClient | null = null;
+
     async function getApiClient(): Promise<ParcelAPIClient | null> {
+      if (cachedClient) return cachedClient;
       const apiKey = await resolveApiKey(config);
-      return apiKey ? new ParcelAPIClient(apiKey) : null;
+      if (!apiKey) return null;
+      cachedClient = new ParcelAPIClient(apiKey);
+      return cachedClient;
     }
 
     // --- parcel_list ---
