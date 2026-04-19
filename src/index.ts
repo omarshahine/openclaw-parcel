@@ -155,7 +155,7 @@ function errorResult(message: string) {
 }
 
 export default definePluginEntry({
-  id: "parcel-cli",
+  id: "openclaw-parcel",
   name: "Parcel",
   description: "Track, add, edit, and remove package deliveries via the Parcel app",
 

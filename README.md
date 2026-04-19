@@ -5,7 +5,7 @@ OpenClaw plugin for [Parcel](https://parcelapp.net) package delivery tracking.
 ## Install
 
 ```bash
-openclaw plugins install parcel-cli
+openclaw plugins install openclaw-parcel
 ```
 
 ## Configuration
@@ -19,7 +19,7 @@ The plugin requires a **Parcel API Key** for list and add operations. Get yours 
 PARCEL_API_KEY=your-api-key
 
 # Reference via env interpolation in config
-openclaw config set plugins.entries.parcel-cli.config.apiKey '${PARCEL_API_KEY}'
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey '${PARCEL_API_KEY}'
 ```
 
 ### Option B: SecretRef object (env source)
@@ -28,7 +28,7 @@ The plugin's `apiKey` config field accepts a SecretRef object directly:
 
 ```bash
 # Set PARCEL_API_KEY in your environment or ~/.openclaw/.env
-openclaw config set plugins.entries.parcel-cli.config.apiKey \
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
   '{"source":"env","provider":"env","id":"PARCEL_API_KEY"}' --strict-json
 ```
 
@@ -39,7 +39,7 @@ openclaw config set plugins.entries.parcel-cli.config.apiKey \
 security add-generic-password -s 'env/PARCEL_API_KEY' -a "$USER" -w 'your-api-key'
 
 # Configure SecretRef to read from Keychain
-openclaw config set plugins.entries.parcel-cli.config.apiKey \
+openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
   '{"source":"exec","provider":"keychain","id":"env/PARCEL_API_KEY"}' --strict-json
 ```
 
@@ -57,7 +57,7 @@ The plugin also resolves the API key from these sources (checked in order):
 
 | Source | Details |
 |--------|---------|
-| Plugin config (string) | `plugins.entries.parcel-cli.config.apiKey` |
+| Plugin config (string) | `plugins.entries.openclaw-parcel.config.apiKey` |
 | Plugin config (SecretRef) | Resolved via env, file, or exec provider |
 | Env var | `PARCEL_API_KEY` |
 | macOS Keychain | `env/PARCEL_API_KEY` |

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Publish parcel-cli to ClawHub
+# Publish openclaw-parcel to ClawHub
 # Usage: ./publish-clawhub.sh [--changelog "description of changes"]
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -38,14 +38,14 @@ if [[ -z "$CHANGELOG" ]]; then
   exit 1
 fi
 
-echo "Publishing parcel-cli v$VERSION to ClawHub..."
+echo "Publishing openclaw-parcel v$VERSION to ClawHub..."
 echo "  Commit: $COMMIT"
 echo "  Changelog: $CHANGELOG"
 echo ""
 
 clawhub package publish "$SCRIPT_DIR" \
   --family code-plugin \
-  --name "parcel-cli" \
+  --name "openclaw-parcel" \
   --display-name "Parcel" \
   --version "$VERSION" \
   --changelog "$CHANGELOG" \
@@ -55,5 +55,5 @@ clawhub package publish "$SCRIPT_DIR" \
   --source-ref "main"
 
 echo ""
-echo "Published parcel-cli v$VERSION to ClawHub."
-echo "Verify: clawhub package inspect parcel-cli"
+echo "Published openclaw-parcel v$VERSION to ClawHub."
+echo "Verify: clawhub package inspect openclaw-parcel"

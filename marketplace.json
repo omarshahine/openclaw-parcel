@@ -1,14 +1,14 @@
 {
-  "name": "parcel-cli",
+  "name": "openclaw-parcel",
   "owner": {
     "name": "Omar Shahine"
   },
   "plugins": [
     {
-      "name": "parcel-cli",
+      "name": "openclaw-parcel",
       "source": ".",
       "description": "Track, add, edit, and remove package deliveries via the Parcel app",
-      "version": "1.3.0"
+      "version": "2.0.0"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "id": "parcel-cli",
+  "id": "openclaw-parcel",
   "name": "Parcel",
   "description": "Track, add, edit, and remove package deliveries via the Parcel app",
   "skills": ["skills/parcel-tracking"],

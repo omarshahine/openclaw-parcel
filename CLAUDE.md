@@ -1,6 +1,6 @@
 # openclaw-parcel
 
-OpenClaw plugin for Parcel package delivery tracking. Published to ClawHub as `parcel-cli`.
+OpenClaw plugin for Parcel package delivery tracking. Published to ClawHub as `openclaw-parcel` (renamed from `parcel-cli` in v2.0.0).
 
 ## Project Structure
 
@@ -11,7 +11,7 @@ OpenClaw plugin for Parcel package delivery tracking. Published to ClawHub as `p
 - `lib/carriers.ts` — Static carrier and status code data
 - `lib/types.ts` — TypeScript interfaces
 - `skills/parcel-tracking/SKILL.md` — Skill definition for OpenClaw discovery
-- `openclaw.plugin.json` — Plugin manifest (id: `parcel-cli`)
+- `openclaw.plugin.json` — Plugin manifest (id: `openclaw-parcel`)
 - `marketplace.json` — ClawHub marketplace metadata
 
 ## Publishing to ClawHub
@@ -41,46 +41,30 @@ Requires `clawhub` CLI installed (`npm install -g clawhub`) and authenticated (`
 ### Verify / Install
 
 ```bash
-clawhub package inspect parcel-cli
-openclaw plugins install parcel-cli
+clawhub package inspect openclaw-parcel
+openclaw plugins install openclaw-parcel
 ```
 
-## Known issue: ClawHub name mismatch (grandfathered)
+## History: rename from parcel-cli → openclaw-parcel (v2.0.0)
 
-The ClawHub plugin name is `parcel-cli`, but the npm package name is
-`openclaw-parcel`. ClawHub's current validator requires these to match —
-new plugins are rejected with `package.json name must match published
-package name`. This repo predates the rule and is grandfathered, so
-publishes still succeed.
+The plugin was originally published to ClawHub as `parcel-cli`, but the npm
+package name has always been `openclaw-parcel`. ClawHub's validator
+eventually enforced a rule requiring these to match, breaking the grandfathered
+publish in 2026-04-19. v2.0.0 aligned both on `openclaw-parcel`.
 
-**Risk:** on any future release, ClawHub may revalidate and `publish-clawhub`
-starts failing. If that happens, the fix is a rename to align both names on
-`openclaw-parcel`:
-
-1. `openclaw.plugin.json` — `id` → `openclaw-parcel`
-2. `marketplace.json` — `name` and `plugins[0].name` → `openclaw-parcel`
-3. `src/index.ts` — `definePluginEntry({ id: "openclaw-parcel" })`
-4. `.github/workflows/publish-clawhub.yml` — `--name openclaw-parcel`, inspect target
-5. `publish-clawhub.sh` — same
-6. `README.md` + this file — install commands + `plugins.entries.<name>` config refs
-7. Bump `package.json` version and tag a release
-
-**Breaking:** shifts the OpenClaw config namespace from
-`plugins.entries.parcel-cli` → `plugins.entries.openclaw-parcel`. Existing
-users (including the maintainer's own install) must migrate:
+**Breaking for existing installs:** OpenClaw config namespace shifted from
+`plugins.entries.parcel-cli` → `plugins.entries.openclaw-parcel`. Migration:
 
 ```bash
 openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
   "$(openclaw config get plugins.entries.parcel-cli.config.apiKey)"
 openclaw config unset plugins.entries.parcel-cli
+openclaw plugins uninstall parcel-cli
+openclaw plugins install openclaw-parcel
 ```
 
-The old `parcel-cli` ClawHub listing becomes a tombstone — ClawHub has no
-`deprecate` command.
-
-Tracked: see the open GitHub issue in this repo for the rename plan. Do not
-execute preemptively; wait for a publish failure or a deliberate decision to
-stop straddling names.
+The old `parcel-cli` ClawHub listing is a tombstone — ClawHub has no
+`deprecate` command, so it remains at 1.3.0 indefinitely.
 
 ## SDK Patterns
 

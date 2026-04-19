@@ -44,7 +44,7 @@ jobs:
         run: |
           clawhub package publish . \
             --family code-plugin \
-            --name parcel-cli \
+            --name openclaw-parcel \
             --display-name Parcel \
             --version "${{ steps.version.outputs.version }}" \
             --changelog "${{ steps.changelog.outputs.text }}" \
@@ -54,4 +54,4 @@ jobs:
             --source-ref "${{ github.ref_name }}"
 
       - name: Verify
-        run: clawhub package inspect parcel-cli
+        run: clawhub package inspect openclaw-parcel
