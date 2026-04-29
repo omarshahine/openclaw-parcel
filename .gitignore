@@ -3,3 +3,4 @@ dist/
 .cache/
 *.tsbuildinfo
 package-lock.json
+reports/
