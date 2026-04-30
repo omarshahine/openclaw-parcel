@@ -8,7 +8,7 @@
       "name": "openclaw-parcel",
       "source": ".",
       "description": "Track, add, edit, and remove package deliveries via the Parcel app",
-      "version": "2.0.0"
+      "version": "2.0.1"
     }
   ]
 }
