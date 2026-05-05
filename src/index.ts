@@ -9,7 +9,7 @@
 
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { type Static } from "@sinclair/typebox";
-import { ParcelAPIClient } from "../lib/api-client.js";
+import { ParcelAPIClient } from "./lib/api-client.js";
 import {
   listSchema,
   addSchema,
@@ -17,7 +17,7 @@ import {
   removeSchema,
   carriersSchema,
   statusCodesSchema,
-} from "../lib/schema.js";
+} from "./lib/schema.js";
 import {
   handleList,
   handleAdd,
@@ -25,7 +25,7 @@ import {
   handleRemove,
   handleCarriers,
   handleStatusCodes,
-} from "../lib/handler.js";
+} from "./lib/handler.js";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";

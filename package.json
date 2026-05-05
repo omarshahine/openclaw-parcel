@@ -1,6 +1,6 @@
 {
   "name": "openclaw-parcel",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "OpenClaw plugin for Parcel package delivery tracking",
   "type": "module",
   "openclaw": {
@@ -16,7 +16,6 @@
   },
   "files": [
     "dist/",
-    "lib/",
     "marketplace.json",
     "openclaw.plugin.json",
     "skills/",
@@ -58,5 +57,5 @@
     "plugin:ci": "npx --yes @openclaw/plugin-inspector ci --no-openclaw --runtime --mock-sdk --allow-execute",
     "build": "tsc -p tsconfig.json"
   },
-  "main": "./dist/src/index.js"
+  "main": "./dist/index.js"
 }
