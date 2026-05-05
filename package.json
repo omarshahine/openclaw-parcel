@@ -1,6 +1,6 @@
 {
   "name": "openclaw-parcel",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "OpenClaw plugin for Parcel package delivery tracking",
   "type": "module",
   "openclaw": {

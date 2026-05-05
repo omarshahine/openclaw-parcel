@@ -22,8 +22,7 @@
                 "type": "string",
                 "enum": [
                   "env",
-                  "file",
-                  "exec"
+                  "file"
                 ]
               },
               "provider": {

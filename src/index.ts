@@ -36,33 +36,13 @@ type EditParams = Static<typeof editSchema>;
 type RemoveParams = Static<typeof removeSchema>;
 
 interface SecretRef {
-  source: "env" | "file" | "exec";
+  source: "env" | "file";
   provider: string;
   id: string;
 }
 
 interface PluginConfig {
   apiKey?: string | SecretRef;
-}
-
-/**
- * Look up a password stored in macOS Keychain via the `security` CLI.
- *
- * Uses a dynamic import with an obfuscated module name so the OpenClaw
- * install-time security scanner's `dangerous-exec` rule is not triggered.
- */
-async function keychainLookup(service: string): Promise<string | undefined> {
-  try {
-    // Obfuscated dynamic import avoids the security scanner's string match
-    const cp = await import(`node:${["child", "process"].join("_")}`);
-    return cp.execFileSync(
-      "security",
-      ["find-generic-password", "-s", service, "-w"],
-      { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] }
-    ).trim() || undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 function isSecretRef(value: unknown): value is SecretRef {
@@ -101,11 +81,6 @@ async function resolveSecretRef(ref: SecretRef): Promise<string | undefined> {
   switch (ref.source) {
     case "env":
       return process.env[ref.id] || undefined;
-    case "exec":
-      if (ref.provider === "keychain" || ref.provider === "security") {
-        return keychainLookup(ref.id);
-      }
-      return undefined;
     case "file":
       // OpenClaw shared-secrets-store: read ~/.openclaw/secrets.json and
       // follow ref.id as a JSON pointer. Matches the pattern used by
@@ -135,7 +110,7 @@ async function resolveApiKey(config?: PluginConfig): Promise<string | undefined>
   }
   if (typeof configValue === "string" && configValue) return configValue;
   if (process.env.PARCEL_API_KEY) return process.env.PARCEL_API_KEY;
-  return keychainLookup("env/PARCEL_API_KEY");
+  return undefined;
 }
 
 /** Helper to wrap a handler result as tool output. */
@@ -165,7 +140,7 @@ export default definePluginEntry({
     // Cache the ParcelAPIClient across tool calls — config and the SecretRef
     // don't change without a gateway restart (which re-runs register), so
     // resolving the key once per registration avoids re-reading secrets.json
-    // and re-running the Keychain lookup on every tool invocation.
+    // on every tool invocation.
     let cachedClient: ParcelAPIClient | null = null;
 
     async function getApiClient(): Promise<ParcelAPIClient | null> {

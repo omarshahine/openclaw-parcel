@@ -32,18 +32,7 @@ openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
   '{"source":"env","provider":"env","id":"PARCEL_API_KEY"}' --strict-json
 ```
 
-### Option C: SecretRef object (exec source, macOS Keychain)
-
-```bash
-# Store key in Keychain
-security add-generic-password -s 'env/PARCEL_API_KEY' -a "$USER" -w 'your-api-key'
-
-# Configure SecretRef to read from Keychain
-openclaw config set plugins.entries.openclaw-parcel.config.apiKey \
-  '{"source":"exec","provider":"keychain","id":"env/PARCEL_API_KEY"}' --strict-json
-```
-
-### Option D: Interactive setup
+### Option C: Interactive setup
 
 ```bash
 openclaw secrets configure
@@ -58,9 +47,8 @@ The plugin also resolves the API key from these sources (checked in order):
 | Source | Details |
 |--------|---------|
 | Plugin config (string) | `plugins.entries.openclaw-parcel.config.apiKey` |
-| Plugin config (SecretRef) | Resolved via env, file, or exec provider |
+| Plugin config (SecretRef) | Resolved via `env` or `file` provider |
 | Env var | `PARCEL_API_KEY` |
-| macOS Keychain | `env/PARCEL_API_KEY` |
 
 ## Tools
 
