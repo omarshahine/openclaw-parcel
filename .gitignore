@@ -4,3 +4,6 @@ dist/
 *.tsbuildinfo
 package-lock.json
 reports/
+
+# Clawpatch local review state
+.clawpatch/
