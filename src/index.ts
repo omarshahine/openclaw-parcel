@@ -7,7 +7,7 @@
  * - parcel_carriers, parcel_status_codes (static reference)
  */
 
-import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { definePluginEntry, type OpenClawPluginDefinition } from "openclaw/plugin-sdk/plugin-entry";
 import { type Static } from "@sinclair/typebox";
 import { ParcelAPIClient } from "./lib/api-client.js";
 import {
@@ -129,7 +129,7 @@ function errorResult(message: string) {
   return toToolResult({ success: false, error: message });
 }
 
-export default definePluginEntry({
+const pluginEntry: OpenClawPluginDefinition = definePluginEntry({
   id: "openclaw-parcel",
   name: "Parcel",
   description: "Track, add, edit, and remove package deliveries via the Parcel app",
@@ -244,3 +244,5 @@ export default definePluginEntry({
     });
   },
 });
+
+export default pluginEntry;
