@@ -43,6 +43,9 @@ echo "  Commit: $COMMIT"
 echo "  Changelog: $CHANGELOG"
 echo ""
 
+npm install
+npm run build
+
 clawhub package publish "$SCRIPT_DIR" \
   --family code-plugin \
   --name "openclaw-parcel" \
