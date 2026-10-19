@@ -42,7 +42,7 @@ jobs:
 
       - name: Install + build (compile TS so clawhub validator finds dist/)
         run: |
-          npm install
+          npm ci --ignore-scripts
           npm run build
 
       - name: Sync manifest version to tag (tag is source of truth)
