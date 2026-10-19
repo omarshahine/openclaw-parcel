@@ -4,6 +4,8 @@ dist/
 *.tsbuildinfo
 package-lock.json
 reports/
+monitor-state*.json
+*.spool.json
 
 # Clawpatch local review state
 .clawpatch/

@@ -110,9 +110,13 @@ parcel_status_codes {}
 
 ## Rate Limits
 
-- parcel_list: ~20 requests/hour
-- parcel_add: ~20 requests/day
+- parcel_list: 20 requests/hour
+- parcel_add: 20 requests/day, including unsuccessful requests
 - parcel_edit / parcel_remove: Browser-based, no API limit
+
+The HTTP client does not automatically retry failed calls because failed
+requests may consume these limits. HTTP rate-limit errors expose Parcel's
+`Retry-After` value to callers.
 
 ## License
 

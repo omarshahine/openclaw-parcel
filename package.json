@@ -65,6 +65,8 @@
     "plugin:check": "npx --yes @openclaw/plugin-inspector inspect --no-openclaw",
     "plugin:ci": "npx --yes @openclaw/plugin-inspector ci --no-openclaw --runtime --mock-sdk --allow-execute",
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "check": "npm run test && npm run plugin:ci && ./scripts/check-versions.sh",
     "prepack": "npm run build"
   },
   "main": "./dist/index.js"

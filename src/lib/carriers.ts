@@ -27,10 +27,12 @@ export const CARRIERS: Record<string, string> = {
 
 export const STATUS_CODES: Record<number, string> = {
   0: "Delivered",
-  1: "Attempted delivery",
+  1: "Frozen",
   2: "In transit",
-  3: "Out for delivery",
-  4: "Info received / Label created",
-  5: "Exception / Problem",
-  6: "Expired / Unknown",
+  3: "Pickup by recipient",
+  4: "Out for delivery",
+  5: "Not found",
+  6: "Failed delivery attempt",
+  7: "Exception",
+  8: "Information received",
 };

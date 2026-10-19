@@ -32,6 +32,19 @@ export interface ParcelAddDeliveryResponse {
   error_message?: string;
 }
 
+/** Parcel's documented delivery states. Unknown numeric values are preserved. */
+export enum ParcelStatusCode {
+  Delivered = 0,
+  Frozen = 1,
+  InTransit = 2,
+  PickupByRecipient = 3,
+  OutForDelivery = 4,
+  NotFound = 5,
+  FailedAttempt = 6,
+  Exception = 7,
+  InformationReceived = 8,
+}
+
 /** Formatted delivery for tool output. */
 export interface FormattedDelivery {
   tracking_number: string;
