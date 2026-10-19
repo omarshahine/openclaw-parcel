@@ -40,7 +40,7 @@ jobs:
 
       - name: Install + build (compile TS so publish has dist/)
         run: |
-          npm install
+          npm ci --ignore-scripts
           npm run build
 
       - name: Publish to NPM (OIDC trusted publishing)

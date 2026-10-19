@@ -43,7 +43,7 @@ echo "  Commit: $COMMIT"
 echo "  Changelog: $CHANGELOG"
 echo ""
 
-npm install
+npm ci --ignore-scripts
 npm run build
 
 clawhub package publish "$SCRIPT_DIR" \
