@@ -69,5 +69,10 @@
     "check": "npm run test && npm run plugin:ci && ./scripts/check-versions.sh",
     "prepack": "npm run build"
   },
-  "main": "./dist/index.js"
+  "main": "./dist/index.js",
+  "overrides": {
+    "openclaw": {
+      "npm": "12.2.1"
+    }
+  }
 }
