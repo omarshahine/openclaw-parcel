@@ -20,7 +20,9 @@
     "marketplace.json",
     "openclaw.plugin.json",
     "skills/",
-    "src/"
+    "src/",
+    "vendor/",
+    "scripts/rebuild-security-npm.py"
   ],
   "keywords": [
     "openclaw",
@@ -59,7 +61,8 @@
   "devDependencies": {
     "@types/node": "^26.4.0",
     "openclaw": "^2026.8.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "npm": "file:vendor/npm-12.2.1-security.20261024.tgz"
   },
   "scripts": {
     "plugin:check": "npx --yes @openclaw/plugin-inspector inspect --no-openclaw",
@@ -72,7 +75,9 @@
   "main": "./dist/index.js",
   "overrides": {
     "openclaw": {
-      "npm": "12.2.1"
+      "npm": "$npm",
+      "zod": "4.6.7",
+      "undici": "8.12.3"
     }
   }
 }
