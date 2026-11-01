@@ -1,61 +1,57 @@
 # Temporary npm security bundle
 
-This is a local, reproducible npm 12.2.1 security rebuild. It is not an official npm release.
-It replaces only the bundled `ip-address` package with 10.7.4 and `undici` with
-6.29.1, then identifies the result as `12.2.1+security.20261024`. The original npm
-code, all other bundled packages, and license notices are preserved.
+This is a local, reproducible npm 12.2.1 security rebuild, not an official npm
+release. It preserves the prior ip-address 10.7.4 and undici 6.29.1 fixes, and
+adds upstream glob 14.0.3, minimatch 11.0.3, path-scurry 3.0.0 and
+@isaacs/nonrecursive-glob-match 1.0.3. These resolve the glob cancellation and
+minimatch amplification advisories. The result is 12.2.1+security.20261031.
 
-As of 2026-10-24, official npm 12.2.1 is the latest release and still includes
-ip-address 10.7.2 and undici 6.29.0. npm child overrides do not replace these
-bundled files. OpenClaw 2026.10.6 still declares npm 12.2.0, undici 8.11.2 and
-zod 4.6.5, so that host upgrade does not resolve these findings.
+Official npm 12.2.1 still bundles the affected packages as of 2026-11-01.
+Root overrides cannot replace npm's bundled files. The rebuild replaces only
+the pinned package directories and updates bundled consumers' declared ranges.
+All other code and license notices remain unchanged. The sources, every changed
+path, range edits, and archive hashes are recorded in the provenance JSON.
 
-The root package pins this archive explicitly and OpenClaw references it through
-`"npm": "$npm"`. HomeClaw records npm as a runtime dependency, matching its
-existing effective role; Parcel records it as a development dependency. The
-root reference is necessary for valid portable resolution: a transitive file
-override alone failed dependency-tree/clean-install checks.
+The root devDependency pins the archive, and OpenClaw references it using
+`"npm": "$npm"`. Consumers do not inherit these root overrides, and this does
+not patch an unrelated globally installed OpenClaw host. The archive and scripts
+are included in the package so an extracted package can resolve the dev file
+reference during a production-only root install.
 
-Clean installs consume the already-patched archive, including when install
-scripts are disabled. The archive is checked by the package lock's SHA-512
-integrity. No postinstall patch hook or npm security configuration is required.
+The root minimatch override also fixes OpenClaw's non-bundled copy. Minimatch 11
+returns matcher objects instead of RegExp for some patterns. The postinstall
+script updates OpenClaw's environment-file wildcard consumer to use its `test`
+method. It accepts only the reviewed OpenClaw 2026.10.5 and 2026.10.8 files with
+exact before/after SHA-256 hashes, is idempotent, refuses external symlinks and
+unknown host versions, and skips when the dev host is absent. Re-review this
+patch for any SDK upgrade. Disabling scripts requires manually running
+`node scripts/patch-openclaw-minimatch.mjs` before using the dev host.
 
-Regenerate manually from the repository root:
+Regenerate and verify from the repository root:
 
 ```sh
 python3 scripts/rebuild-security-npm.py
+python3 scripts/rebuild-security-npm.py --check
+npm ci
+npm test
+npm audit
+npm run plugin:ci
 ```
 
-`npm-security-sources.json` pins the three official registry tarballs by URL and
-SHA-512 integrity. The script verifies them before extraction, replaces only
-the two package directories, checks that other file bytes and executable modes
-are unchanged apart from npm's version, and writes a deterministic archive.
-Temporary original sources remain available for inspection. Provenance records
-all changed paths and the resulting hashes. Rebuilds produced byte-identical
-archives in both repositories and on repeated generation.
+The rebuild verifies every official tarball against pinned SHA-512 integrity,
+checks all unpatched bytes and executable modes, and produces a deterministic
+archive. CI verifies this provenance, clean-installs, runs the regression suite,
+and audits the complete tree. Tests exercise cancellation, bounded hostile glob
+patterns, actual installed OpenClaw wildcard expansion, patch drift rejection,
+and offline npm workspace discovery/install/packing.
 
 Archive SHA-256:
-`bc845cf944e23b9f15e62d6aecc93d2fee5b74a70d831ac75c0126b43b21afb6`
+`30da6d0a20b463c82c85023420643b15f4ab7a8963ac1742bdebf18deb829610`
 
-This adds about 3.1 MB per repository and a temporary maintenance responsibility.
-Before changing source pins, review the upstream package changes, regenerate,
-verify installed bundle versions and npm parent semver ranges, and rerun clean
-full/production installs, audits, builds, unit tests and plugin checks. Keep the
-archive, sources, provenance and rebuild script together in any future change.
-
-Remove this rebuild once an official npm release bundles compatible fixed
-versions. Restore the root package/override to that official release, regenerate
-the lockfile, and verify the actual installed bundle. Package overrides are
-root-project policy: consumers of the published plugin do not inherit them, and
-this does not patch an unrelated globally installed OpenClaw host.
-
-Parcel includes this directory and the rebuild script in its package file list.
-An extracted package can resolve development file dependencies even during a
-production-only root install, so excluding the archive would break that path.
-The packed plugin grows from about 23 KB to about 3.2 MB while this workaround
-is present. Ordinary consumers still omit npm as a runtime dependency.
-
-CI runs `python3 scripts/rebuild-security-npm.py --check` before dependency
-installation. This downloads and verifies the pinned sources, reconstructs the
-expected file tree, and compares every file byte/executable mode plus provenance
-with the committed archive. It does not rewrite the archive or provenance.
+Keep the tarball, sources, provenance and scripts together. Remove this temporary
+rebuild and compatibility hook once official npm/OpenClaw releases bundle fixed,
+compatible dependencies. Before replacing pins, clean-install and audit both
+full and production-only trees, test packed-artifact consumption, and rerun
+security and plugin tests. Preserve platform-optional lock entries when refreshing
+bundled metadata; npm can retain stale bundle metadata when only the file tarball
+reference changes.

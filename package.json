@@ -22,7 +22,8 @@
     "skills/",
     "src/",
     "vendor/",
-    "scripts/rebuild-security-npm.py"
+    "scripts/rebuild-security-npm.py",
+    "scripts/patch-openclaw-minimatch.mjs"
   ],
   "keywords": [
     "openclaw",
@@ -62,15 +63,17 @@
     "@types/node": "^26.4.0",
     "openclaw": "^2026.8.1",
     "typescript": "^7.0.2",
-    "npm": "file:vendor/npm-12.2.1-security.20261024.tgz"
+    "npm": "file:vendor/npm-12.2.1-security.20261031.tgz"
   },
   "scripts": {
     "plugin:check": "npx --yes @openclaw/plugin-inspector inspect --no-openclaw",
     "plugin:ci": "npx --yes @openclaw/plugin-inspector ci --no-openclaw --runtime --mock-sdk --allow-execute",
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
-    "test": "npm run build && node --test test/*.test.mjs",
+    "test": "npm run build && node --test test/*.test.mjs scripts/test-security-npm.mjs",
     "check": "npm run test && npm run plugin:ci && ./scripts/check-versions.sh",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "postinstall": "node scripts/patch-openclaw-minimatch.mjs",
+    "test:security": "node --test scripts/test-security-npm.mjs"
   },
   "main": "./dist/index.js",
   "overrides": {
@@ -78,6 +81,7 @@
       "npm": "$npm",
       "zod": "4.6.7",
       "undici": "8.12.3"
-    }
+    },
+    "minimatch": "11.0.3"
   }
 }
